@@ -106,6 +106,10 @@ permalink: /
                     {% if site.blog_url %}
                     <li><a class="fa fa-2x fa-tags" href="{{ site.baseurl }}{{ site.blog_url }}"><span class="description">Blog</span></a></li>
                     {% endif %}
+                    
+                    {% if site.weixin %}
+                    <li><a class="fa fa-2x fa-tags" href="{{ site.baseurl }}{{ site.weixin }}"><span class="description">weixin</span></a></li>
+                    {% endif %}
 
                     {% if site.email %}
                     <li><a class="fa fa-2x fa-envelope" href="mailto:{{ site.email }}"><span class="description">Email</span></a></li>
