@@ -1,7 +1,8 @@
 # Site settings
 name: LVE
 description: "LiVE long and prosper"
-url: "https://mp.weixin.qq.com/s/6iyt1KS8yOqOwWJ7vumbBQ"
+url: ""
+# https://mp.weixin.qq.com/s/6iyt1KS8yOqOwWJ7vumbBQ
 
 
 # Delete the lines you don't need
