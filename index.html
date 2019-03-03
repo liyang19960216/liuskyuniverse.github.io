@@ -12,8 +12,8 @@ permalink: /
         <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
         {% if site.favicon_img %}
         <!-- <link rel="shortcut icon" href="{{ site.favicon_img_path }}" /> -->
-        <link rel="shortcut icon" href="/favicon.ico"/>
-        <link rel="bookmark" href="/favicon.ico"/>
+        <link rel="shortcut icon" href="{{ site.favicon_img_path }}"/>
+        <link rel="bookmark" href="{{ site.favicon_img_path }}"/>
         {% endif %}
         <link rel="stylesheet" href="{{ "css/front.css" | prepend: site.baseurl }}">
         <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700&subset=latin' rel='stylesheet' type='text/css'>
