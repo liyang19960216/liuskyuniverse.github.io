@@ -1,0 +1,101 @@
+thread mythread():			#线程1 用于1、2、3、4 捕捉记录p1、p2
+	if scan_flag == True:
+	
+		if (get_standard_digital_in(4)):
+			p_1 = get_actual_tcp_pose()
+		end
+		if (get_standard_digital_in(5)):
+			p_2 = get_actual_tcp_pose()
+		end
+	else:
+		if (get_standard_digital_in(4)):
+			p_3 = get_actual_tcp_pose()
+		end
+		if (get_standard_digital_in(5)):
+			p_4 = get_actual_tcp_pose()
+		end
+	end
+end
+
+#thread mythread_2():			#线程2 用于4、5、6、7 捕捉记录p3、p4
+#		if (get_standard_digital_in(4)):
+#			p_3 = get_actual_tcp_pose()
+#		end
+#		if (get_standard_digital_in(5)):
+#			p_4 = get_actual_tcp_pose()
+#		end
+#end
+
+
+def SubP_scan_first():				#扫描子程序
+
+    	movej(point_pave_above,a = 1.2,v = 1.0)
+    	sampling = run mythread()	#开启线程1
+	movej([-0.900,0.237,-0.075,0,3.1416,0],a = 1.2,v = 1.0)     #p1
+	movel([-0.900,0.297,-0.075,0,3.1416,0],a = 1.2,v = 0.1)     #p2  
+	movej([-0.700,0.297,-0.075,0,3.1416,0],a = 1.2,v = 1.0)     #p3
+	movel([-0.700,0.237,-0.075,0,3.1416,0],a = 1.2,v = 0.1)     #p4
+#	kill sampling_1                 #关闭线程1
+	scan_flag = set_flag(0,False)
+#    sampling_2 = run mythread_2()   #开启线程2
+#	movej([-0.700,0.237,-0.075,0,3.1416,0],a = 1.2,v = 1.0)     #p4
+	movel([-0.633,0.237,-0.075,0,3.1416,0],a = 1.2,v = 0.1)     #p5
+	movej([-0.633,0.046,-0.075,0,3.1416,0],a = 1.2,v = 1.0)     #p6
+	movel([-0.700,0.046,-0.075,0,3.1416,0],a = 1.2,v = 0.1)     #p7
+	kill sampling                 #关闭线程2
+end
+
+
+def calculate(p_1,p_2,p_3, p_4):   #计算被扫描瓷砖中点，输入4个P变量，输出一个P变量
+	k_1 = (p_1[1] - p_2[1]) / (p_1[0] -  p_2[0])		#直线1、2直线斜率K
+	theta_1 = atan(k_1) * 180 / 3.14					#直线1、2直线倾斜角θ 单位是度
+	b_1 = p_1[1]-(p_1[1] - p_2[1]) / (p_1[0] - p_2[0]) * p_1[0]		#直线1、2直线截距
+
+	if p_3[0] == p_4[0] :								#如果
+		theta_2 = 90									#直线3、4倾斜角θ = 90°
+
+		intersection_1_x = p_3[0]						#12、34交点x坐标
+		intersection_1_y = k_1 * intersection_1_x + b_1	#12、34交点y坐标
+	else:
+		k_2 = (p_3[1] - p_4[1]) / (p_3[0] - p_4[0])		#当3、4斜率K值存在时
+		theta_2 = atan(k_2) * 180 / 3.14				#直线3、4直线倾斜角θ 单位是度
+		b_2 = p_3[1] - (p_3[1] - p_4[1]) / (p_3[0] - p_4[0]) * p_3[3]	#3、4直线截距
+
+		intersection_1_x = (b_1 - b_2) / (k_2 - k_1)	#12、34交点x坐标
+		intersection_1_y = k_1 * intersection_1_x + b_1	#12、34交点y坐标
+	end
+	
+	center_point_x = 150 * sqrt(2) * cos((45 + theta_1) * (3.14) / 180) + intersection_1_x
+	
+	center_point_y = 150 * sqrt(2) * sin((45 + theta_1) * (3.14) / 180) + intersection_1_y
+	
+	return [intersection_1_x,intersection_1_y,theta_1]
+end 
+
+def valve(start):	#空压机控制
+	set_standard_digital_out(0,start)	
+end
+
+
+#主程序
+point_0=p[-0.800,0,0,0,3.1416,0] #定义扫描起点
+point_pave_above=p[-0.964,0.092,-0.075,0,3.1416,0] #定义XXXX点
+	scan_flag = set_flag(0,True)
+	p_1 = [0,0,0,0,3.1416,0]
+	p_2 = [0,0,0,0,3.1416,0]
+	p_3 = [0,0,0,0,3.1416,0]
+	p_4 = [0,0,0,0,3.1416,0]
+movej(point_0,a=1.2,v=1.0)#扫描起点
+
+SubP_scan_first()#进行扫描（采用调用方法）
+
+result = calculate(p_1,p_2,p_3, p_4) #intersection_1_x,intersection_1_y,theta_1
+movej(point_0,a=1.2,v=1.0)
+valve(True)
+
+offset=p[result[0]-point_0[0],result[1]-point_0[1],40,0,0,result[3]]
+point_pave=pose_trans(point_0,offset)  
+movel(point_pave,a = 1.2,v = 0.25)
+
+valve(False)
+movel(point_0,a = 1.2,v = 0.25)
